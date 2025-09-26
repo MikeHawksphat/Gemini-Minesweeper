@@ -156,29 +156,33 @@ function toggleCustomDifficultyInputs(difficultySelect) {
   }
 }
 
-window.setDifficulty = setDifficulty; // Expose setDifficulty globally
-window.toggleCustomDifficultyInputs = toggleCustomDifficultyInputs; // Expose toggleCustomDifficultyInputs globally
-
-function loadState(state) {
-  ROWS = state.rows;
-  COLS = state.cols;
-  MINES = state.mines;
-  board = state.board;
-  flagsPlaced = state.flagsPlaced;
-  gameOver = state.gameOver;
-  timer = state.timer;
-  isFirstClick = state.isFirstClick;
-
-  // Make UI visible for guest
-  document.querySelector('.header__section--center').style.visibility = 'visible';
-  document.querySelector('.header__section--right .difficulty-selector').style.visibility =
-    'visible';
-
-  minesCountElement.textContent = MINES - flagsPlaced;
-  timerElement.textContent = timer;
-  handleZoom(zoomSlider, boardElement, COLS, ROWS);
-  renderBoard(boardElement, board, ROWS, COLS);
+function handleCellRightClick(e) {
+  e.preventDefault();
+  const cellElement = e.target.closest('.cell');
+  if (!cellElement) return;
+  const row = parseInt(cellElement.dataset.row);
+  const col = parseInt(cellElement.dataset.col);
+  if (isHost) {
+    processFlag(row, col);
+  } else {
+    Object.values(connections)[0].send({ type: 'flag', row, col });
+  }
 }
+
+window.handleZoom = handleZoom;
+window.renderBoard = renderBoard;
+window.renderEndGame = renderEndGame;
+window.updateCell = updateCell;
+window.getCell = getCell;
+window.handleChordPreview = handleChordPreview;
+window.clearChordPreview = clearChordPreview;
+window.handleCellRightClick = handleCellRightClick;
+window.handleKeyboardNavigation = handleKeyboardNavigation;
+window.setDifficulty = setDifficulty;
+window.toggleCustomDifficultyInputs = toggleCustomDifficultyInputs;
+window.loadState = loadState;
+window.handleCellClick = handleCellClick;
+
 
 function handleCellClick(e) {
   const cellElement = e.target.closest('.cell');
