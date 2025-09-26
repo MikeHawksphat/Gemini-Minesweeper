@@ -175,7 +175,6 @@ window.handleKeyboardNavigation = function (
   isHost,
   connections,
   username,
-  peer,
 ) {
   const activeElement = document.activeElement;
   let currentRow = -1;
@@ -207,7 +206,7 @@ window.handleKeyboardNavigation = function (
       if (currentRow !== -1 && currentCol !== -1) {
         e.preventDefault(); // Prevent scrolling
         if (isHost) {
-          processClick(currentRow, currentCol, username, peer);
+          processClick(currentRow, currentCol, username);
         } else {
           Object.values(connections)[0].send({ type: 'click', row: currentRow, col: currentCol });
         }
@@ -276,10 +275,6 @@ window.loadState = function (state) {
   timer = state.timer;
   isFirstClick = state.isFirstClick;
 
-  if (state.shortAlias) {
-    localStorage.setItem(state.shortAlias, state.peerId);
-  }
-
   // Make UI visible for guest
   document.querySelector('.header__section--center').style.visibility = 'visible';
   document.querySelector('.header__section--right .difficulty-selector').style.visibility =
@@ -291,13 +286,13 @@ window.loadState = function (state) {
   renderBoard(boardElement, board, ROWS, COLS);
 };
 
-window.handleCellClick = function (e, username, peer) {
+window.handleCellClick = function (e, username) {
   const cellElement = e.target.closest('.cell');
   if (!cellElement) return;
   const row = parseInt(cellElement.dataset.row);
   const col = parseInt(cellElement.dataset.col);
   if (isHost) {
-    processClick(row, col, username, peer); // Host clicks are processed with a default name
+    processClick(row, col, username); // Host clicks are processed with a default name
   } else {
     Object.values(connections)[0].send({ type: 'click', row, col });
   }

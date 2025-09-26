@@ -23,85 +23,81 @@ document.addEventListener('DOMContentLoaded', () => {
     username = `Player${Math.floor(Math.random() * 1000)}`;
   }
 
-  const peer = new Peer({ metadata: { username } });
-  connections = {}; // Use object to map peerId to conn
-  isHost = false;
-  let shortAlias = '';
-
-  function generateShortAlias() {
-    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-    let result = '';
-    for (let i = 0; i < 4; i++) {
-      result += chars.charAt(Math.floor(Math.random() * chars.length));
-    }
-    return result;
-  }
-
-  peer.on('open', (id) => {
-    console.log('My Peer ID:', id);
-  });
-
-  peer.on('error', (err) => {
-    console.error('PeerJS error:', err);
-    displayMessage(
-      'System',
-      `PeerJS connection error: ${err.message}. Please refresh and try again.`,
-    );
-    alert(`An error occurred: ${err.message}`);
-  });
-
-  peer.on('connection', (conn) => {
-    conn.on('open', () => {
-      console.log(`Data connection to ${conn.peer} (${conn.metadata.username}) is open.`);
-      connections[conn.peer] = conn;
-      if (isHost) {
-        conn.send({ type: 'state', state: getState(peer) });
-      } else {
-        // The guest will receive the alias from the host via the 'state' message
-      }
-      setupConnectionListeners(conn, peer);
-      displayMessage('System', `${conn.metadata.username} joined the game.`);
-    });
-
-    conn.on('close', () => {
-      console.log(`Connection to ${conn.peer} has closed.`);
-      displayMessage('System', `${connections[conn.peer].metadata.username} left the game.`);
-      delete connections[conn.peer];
-    });
-  });
+  let peer;
 
   hostButton.addEventListener('click', () => {
-    isHost = true;
-    lobbyContainer.classList.add('hidden');
-    gameContainer.classList.remove('hidden');
-    shortAlias = generateShortAlias();
-    startGame();
-    displayMessage('System', `You are the host. Share your ID: ${peer.id} (Alias: ${shortAlias})`);
-  });
-
-  joinButton.addEventListener('click', () => {
-    let hostId = joinIdInput.value.trim();
-    if (!hostId) {
-      alert('Please enter a Host ID.');
+    const gameId = document.getElementById('create-game-id-input').value.trim();
+    if (!gameId) {
+      alert('Please enter a Game ID.');
       return;
     }
-    isHost = false;
-    const conn = peer.connect(hostId, { metadata: { username } });
-    conn.on('open', () => {
-      connections[conn.peer] = conn;
+
+    isHost = true;
+    connections = {};
+    peer = new Peer(gameId, { metadata: { username } });
+
+    peer.on('open', (id) => {
+      console.log('My Peer ID is: ' + id);
       lobbyContainer.classList.add('hidden');
       gameContainer.classList.remove('hidden');
       startGame();
-      setupConnectionListeners(conn, peer);
-      displayMessage('System', `Joined host: ${hostId}`);
+      displayMessage('System', `Game created with ID: ${id}`);
     });
-    conn.on('error', (err) => {
-      console.error(err);
+
+    peer.on('connection', (conn) => {
+      console.log(`Data connection to ${conn.peer} (${conn.metadata.username}) is open.`);
+      connections[conn.peer] = conn;
+      conn.on('open', () => {
+        if (isHost) {
+          conn.send({ type: 'state', state: getState() });
+        }
+        setupConnectionListeners(conn);
+        displayMessage('System', `${conn.metadata.username} joined the game.`);
+      });
+    });
+
+    peer.on('error', (err) => {
+      console.error('PeerJS error:', err);
       displayMessage(
         'System',
-        `Connection to host failed: ${err.message}. Please ensure the host has started their game.`,
+        `PeerJS connection error: ${err.message}. Please refresh and try again.`,
       );
-      alert('Connection failed.');
+      alert(`An error occurred: ${err.message}`);
+    });
+  });
+
+  joinButton.addEventListener('click', () => {
+    const gameId = document.getElementById('join-game-id-input').value.trim();
+    if (!gameId) {
+      alert('Please enter a Game ID.');
+      return;
+    }
+
+    isHost = false;
+    connections = {};
+    peer = new Peer({ metadata: { username } });
+
+    peer.on('open', () => {
+      const conn = peer.connect(gameId, { metadata: { username } });
+
+      conn.on('open', () => {
+        console.log(`Data connection to ${conn.peer} (${conn.metadata.username}) is open.`);
+        connections[conn.peer] = conn;
+        lobbyContainer.classList.add('hidden');
+        gameContainer.classList.remove('hidden');
+        startGame();
+        setupConnectionListeners(conn);
+        displayMessage('System', `Joined game: ${gameId}`);
+      });
+
+      conn.on('error', (err) => {
+        console.error(err);
+        displayMessage(
+          'System',
+          `Connection to host failed: ${err.message}. Please ensure the host has started their game.`,
+        );
+        alert('Connection failed.');
+      });
     });
   });
 
@@ -173,7 +169,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function startGame() {
     zoomSlider.addEventListener('input', () => handleZoom(zoomSlider, boardElement, COLS, ROWS));
-    boardElement.addEventListener('click', (e) => handleCellClick(e, username, peer));
+    boardElement.addEventListener('click', (e) => handleCellClick(e, username));
     boardElement.addEventListener('contextmenu', (e) => handleCellRightClick(e));
     boardElement.addEventListener('keydown', (e) =>
       handleKeyboardNavigation(
@@ -186,33 +182,32 @@ document.addEventListener('DOMContentLoaded', () => {
         isHost,
         connections,
         username,
-        peer,
       ),
     );
 
     if (isHost) {
       difficultySelect.addEventListener('change', () => {
         toggleCustomDifficultyInputs(difficultySelect);
-        init(peer);
+        init();
       });
       resetButton.addEventListener('click', () => {
         resetButton.classList.add('spin-animation');
         setTimeout(() => {
           resetButton.classList.remove('spin-animation');
         }, 500); // Match animation duration
-        init(peer);
+        init();
       });
       modalResetButton.addEventListener('click', () => {
-        init(peer);
+        init();
         resetButton.focus(); // Return focus to the main reset button
       });
       boardElement.addEventListener('mouseover', (e) => handleChordPreview(e));
       boardElement.addEventListener('mouseout', () => clearChordPreview());
       // Add event listeners for custom difficulty inputs
-      customRowsInput.addEventListener('input', () => init(peer));
-      customColsInput.addEventListener('input', () => init(peer));
-      customMinesInput.addEventListener('input', () => init(peer));
-      init(peer);
+      customRowsInput.addEventListener('input', () => init());
+      customColsInput.addEventListener('input', () => init());
+      customMinesInput.addEventListener('input', () => init());
+      init();
     }
 
     toggleCustomDifficultyInputs(difficultySelect); // Call on initial load

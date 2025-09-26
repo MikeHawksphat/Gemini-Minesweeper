@@ -25,7 +25,6 @@ let timeInterval;
 let gameOver;
 let isFirstClick;
 let developerMode = false;
-let shortAlias = '';
 
 function deepCopyBoard(board) {
   return board.map((row) => row.map((cell) => ({ ...cell })));
@@ -48,7 +47,7 @@ function broadcast(data) {
   });
 }
 
-function init(peer) {
+function init() {
   if (!isHost) return;
   const { R, C, M } = setDifficulty(difficultySelect, difficulties);
   ROWS = R;
@@ -71,10 +70,10 @@ function init(peer) {
   minesCountElement.textContent = MINES - flagsPlaced;
   timerElement.textContent = timer;
   if (timeInterval) clearInterval(timeInterval);
-  broadcast({ type: 'state', state: getState(peer) });
+  broadcast({ type: 'state', state: getState() });
 }
 
-function getState(peer) {
+function getState() {
   return {
     rows: ROWS,
     cols: COLS,
@@ -84,12 +83,10 @@ function getState(peer) {
     gameOver: gameOver,
     timer: timer,
     isFirstClick: isFirstClick,
-    shortAlias: shortAlias,
-    peerId: peer.id,
   };
 }
 
-function processClick(row, col, playerName, peer) {
+function processClick(row, col, playerName) {
   if (gameOver) return;
   const cell = board[row][col];
   if (cell.revealed) {
@@ -97,7 +94,7 @@ function processClick(row, col, playerName, peer) {
     if (flags === cell.count) {
       getAdjacentCells(row, col).forEach((c) => {
         if (!board[c.row][c.col].flagged && !board[c.row][c.col].revealed) {
-          processClick(c.row, c.col, playerName, peer);
+          processClick(c.row, c.col, playerName);
         }
       });
     }
@@ -117,16 +114,16 @@ function processClick(row, col, playerName, peer) {
       broadcast({ type: 'timer', time: timer });
     }, 1000);
     renderBoard(boardElement, board, ROWS, COLS);
-    checkWinCondition(peer); // Check win condition after first click reveal
+    checkWinCondition(); // Check win condition after first click reveal
     return;
   }
   if (cell.mine) {
-    endGame(false, playerName, peer);
+    endGame(false, playerName);
   } else {
     const revealed = revealCell(row, col, []);
     broadcast({ type: 'reveal', cells: revealed });
     renderBoard(boardElement, board, ROWS, COLS);
-    checkWinCondition(peer);
+    checkWinCondition();
   }
 }
 
@@ -141,7 +138,7 @@ function processFlag(row, col) {
   broadcast({ type: 'flag', row, col, flagged: cell.flagged, flagsPlaced: flagsPlaced });
 }
 
-function endGame(win, loserName = 'Someone', peer) {
+function endGame(win, loserName = 'Someone') {
   if (gameOver) return;
   gameOver = true;
   clearInterval(timeInterval);
@@ -150,7 +147,7 @@ function endGame(win, loserName = 'Someone', peer) {
     minesLocation.forEach(([row, col]) => {
       if (!board[row][col].revealed) board[row][col].revealed = true;
     });
-    broadcast({ type: 'state', state: getState(peer) });
+    broadcast({ type: 'state', state: getState() });
     broadcast({ type: 'gameOver', win: false, loserName: loserName });
   } else {
     broadcast({ type: 'gameOver', win: true });
@@ -198,7 +195,7 @@ function revealCell(row, col, revealed) {
   return revealed;
 }
 
-function checkWinCondition(peer) {
+function checkWinCondition() {
   let revealedCount = 0;
   for (let row = 0; row < ROWS; row++) {
     for (let col = 0; col < COLS; col++) {
@@ -208,7 +205,7 @@ function checkWinCondition(peer) {
     }
   }
   if (revealedCount === ROWS * COLS - MINES) {
-    endGame(true, null, peer);
+    endGame(true, null);
   }
 }
 
