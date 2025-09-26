@@ -147,10 +147,17 @@ function handleChordPreview(e) {
   }
 }
 
-function clearChordPreview() {
-  const previewCells = document.querySelectorAll('.preview');
-  previewCells.forEach((cell) => cell.classList.remove('preview'));
+function toggleCustomDifficultyInputs(difficultySelect) {
+  const customInputsDiv = document.getElementById('custom-difficulty-inputs');
+  if (difficultySelect.value === 'custom') {
+    customInputsDiv.classList.remove('hidden');
+  } else {
+    customInputsDiv.classList.add('hidden');
+  }
 }
+
+window.setDifficulty = setDifficulty; // Expose setDifficulty globally
+window.toggleCustomDifficultyInputs = toggleCustomDifficultyInputs; // Expose toggleCustomDifficultyInputs globally
 
 function loadState(state) {
   ROWS = state.rows;
