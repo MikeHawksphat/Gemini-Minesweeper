@@ -26,6 +26,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const peer = new Peer({ metadata: { username } });
   connections = {}; // Use object to map peerId to conn
   isHost = false;
+  let shortAlias = '';
 
   function generateShortAlias() {
     const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
@@ -54,16 +55,11 @@ document.addEventListener('DOMContentLoaded', () => {
       console.log(`Data connection to ${conn.peer} (${conn.metadata.username}) is open.`);
       connections[conn.peer] = conn;
       if (isHost) {
-        conn.send({ type: 'state', state: getState() });
+        conn.send({ type: 'state', state: getState(peer) });
       } else {
-        // Guest stores the mapping for future use, but the host should send the alias
-        // For now, keep prompt, but ideally host sends it.
-        const shortAlias = prompt('Please enter the short alias provided by the host:');
-        if (shortAlias) {
-          localStorage.setItem(shortAlias, conn.peer);
-        }
+        // The guest will receive the alias from the host via the 'state' message
       }
-      setupConnectionListeners(conn);
+      setupConnectionListeners(conn, peer);
       displayMessage('System', `${conn.metadata.username} joined the game.`);
     });
 
@@ -78,19 +74,13 @@ document.addEventListener('DOMContentLoaded', () => {
     isHost = true;
     lobbyContainer.classList.add('hidden');
     gameContainer.classList.remove('hidden');
-    const shortAlias = generateShortAlias();
-    localStorage.setItem(shortAlias, peer.id);
+    shortAlias = generateShortAlias();
     startGame();
     displayMessage('System', `You are the host. Share your ID: ${peer.id} (Alias: ${shortAlias})`);
   });
 
   joinButton.addEventListener('click', () => {
     let hostId = joinIdInput.value.trim();
-    const mappedId = localStorage.getItem(hostId);
-    if (mappedId) {
-      hostId = mappedId;
-    }
-    localStorage.setItem('lastHostId', hostId);
     if (!hostId) {
       alert('Please enter a Host ID.');
       return;
@@ -102,7 +92,7 @@ document.addEventListener('DOMContentLoaded', () => {
       lobbyContainer.classList.add('hidden');
       gameContainer.classList.remove('hidden');
       startGame();
-      setupConnectionListeners(conn);
+      setupConnectionListeners(conn, peer);
       displayMessage('System', `Joined host: ${hostId}`);
     });
     conn.on('error', (err) => {
@@ -183,7 +173,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function startGame() {
     zoomSlider.addEventListener('input', () => handleZoom(zoomSlider, boardElement, COLS, ROWS));
-    boardElement.addEventListener('click', (e) => handleCellClick(e, username));
+    boardElement.addEventListener('click', (e) => handleCellClick(e, username, peer));
     boardElement.addEventListener('contextmenu', (e) => handleCellRightClick(e));
     boardElement.addEventListener('keydown', (e) =>
       handleKeyboardNavigation(
@@ -196,32 +186,33 @@ document.addEventListener('DOMContentLoaded', () => {
         isHost,
         connections,
         username,
+        peer,
       ),
     );
 
     if (isHost) {
       difficultySelect.addEventListener('change', () => {
         toggleCustomDifficultyInputs(difficultySelect);
-        init();
+        init(peer);
       });
       resetButton.addEventListener('click', () => {
         resetButton.classList.add('spin-animation');
         setTimeout(() => {
           resetButton.classList.remove('spin-animation');
         }, 500); // Match animation duration
-        init();
+        init(peer);
       });
       modalResetButton.addEventListener('click', () => {
-        init();
+        init(peer);
         resetButton.focus(); // Return focus to the main reset button
       });
       boardElement.addEventListener('mouseover', (e) => handleChordPreview(e));
       boardElement.addEventListener('mouseout', () => clearChordPreview());
       // Add event listeners for custom difficulty inputs
-      customRowsInput.addEventListener('input', () => init());
-      customColsInput.addEventListener('input', () => init());
-      customMinesInput.addEventListener('input', () => init());
-      init();
+      customRowsInput.addEventListener('input', () => init(peer));
+      customColsInput.addEventListener('input', () => init(peer));
+      customMinesInput.addEventListener('input', () => init(peer));
+      init(peer);
     }
 
     toggleCustomDifficultyInputs(difficultySelect); // Call on initial load

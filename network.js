@@ -1,4 +1,4 @@
-function setupConnectionListeners(conn) {
+function setupConnectionListeners(conn, peer) {
   conn.on('data', (data) => {
     console.log('conn.on(data): Received data:', data, 'from peer:', conn.peer);
     if (data.type === 'chat') {
@@ -16,7 +16,7 @@ function setupConnectionListeners(conn) {
     if (isHost) {
       const playerName = conn.metadata.username;
       if (data.type === 'click') {
-        processClick(data.row, data.col, playerName);
+        processClick(data.row, data.col, playerName, peer);
       } else if (data.type === 'flag') {
         processFlag(data.row, data.col);
       }
