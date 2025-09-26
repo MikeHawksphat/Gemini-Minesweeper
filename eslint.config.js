@@ -1,0 +1,82 @@
+import globals from 'globals';
+import pluginJs from '@eslint/js';
+import eslintPluginPrettierRecommended from 'eslint-plugin-prettier/recommended';
+
+export default [
+  {
+    languageOptions: {
+      globals: {
+        ...globals.browser,
+        Peer: 'readonly', // Add Peer as a global
+        // Global variables from minesweeper.js
+        isHost: 'writable',
+        connections: 'writable',
+        boardElement: 'writable',
+        minesCountElement: 'writable',
+        timerElement: 'writable',
+        difficultySelect: 'writable',
+        zoomSlider: 'writable',
+        modal: 'writable',
+        modalMessage: 'writable',
+        modalResetButton: 'writable',
+        resetButton: 'writable',
+        difficulties: 'writable',
+        ROWS: 'writable',
+        COLS: 'writable',
+        MINES: 'writable',
+        board: 'writable',
+        minesLocation: 'writable',
+        flagsPlaced: 'writable',
+        timer: 'writable',
+        timeInterval: 'writable',
+        gameOver: 'writable',
+        isFirstClick: 'writable',
+        developerMode: 'writable',
+        customDifficultyInputsDiv: 'writable',
+        customRowsInput: 'writable',
+        customColsInput: 'writable',
+        customMinesInput: 'writable',
+        // Global functions from various files
+        toggleDeveloperMode: 'readonly',
+        broadcast: 'readonly',
+        init: 'readonly',
+        getState: 'readonly',
+        processClick: 'readonly',
+        processFlag: 'readonly',
+        endGame: 'readonly',
+        placeMines: 'readonly',
+        calculateNumbers: 'readonly',
+        revealCell: 'readonly',
+        checkWinCondition: 'readonly',
+        getAdjacentCells: 'readonly',
+        findGuessingCells: 'readonly',
+        handleZoom: 'readonly',
+        renderBoard: 'readonly',
+        renderEndGame: 'readonly',
+        updateCell: 'readonly',
+        getCell: 'readonly',
+        handleChordPreview: 'readonly',
+        clearChordPreview: 'readonly',
+        handleCellRightClick: 'readonly',
+        handleKeyboardNavigation: 'readonly',
+        setDifficulty: 'readonly',
+        toggleCustomDifficultyInputs: 'readonly',
+        loadState: 'readonly',
+        handleCellClick: 'readonly',
+        sendChatMessage: 'readonly',
+        displayMessage: 'readonly',
+        setupConnectionListeners: 'readonly',
+      },
+      ecmaVersion: 12,
+      sourceType: 'module',
+    },
+  },
+  pluginJs.configs.recommended,
+  eslintPluginPrettierRecommended,
+  {
+    rules: {
+      // Disable no-unused-vars for global variables and functions
+      'no-unused-vars': 'off',
+    },
+  },
+];

@@ -1,92 +1,134 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Minesweeper</title>
-    <link rel="stylesheet" href="style.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
-</head>
-<body>
-
+    <link rel="stylesheet" href="style.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
+    />
+  </head>
+  <body>
     <div id="lobby-container" class="lobby-container">
-        <h1 class="lobby-title"><span class="gradient-text">Gemini</span> Minesweeper</h1>
-        <h2>Co-op Mode</h2>
-        <div class="lobby-section">
-            <button id="host-button" class="button">Host New Game</button>
-            <p>Your Lobby ID: <strong id="my-peer-id">Waiting for server...</strong> (Alias: <strong id="my-short-id">Generating...</strong>)</p>
-            <button id="copy-id-button" class="button">Copy ID</button>
-        </div>
-        <div class="lobby-section">
-            <input type="text" id="join-id-input" placeholder="Enter Host's Lobby ID">
-            <button id="join-button" class="button">Join Game</button>
-        </div>
+      <h1 class="lobby-title"><span class="gradient-text">Gemini</span> Minesweeper</h1>
+      <h2>Co-op Mode</h2>
+      <div class="lobby-section">
+        <label for="username-input">Your Name:</label>
+        <input type="text" id="username-input" placeholder="Player Name" />
+      </div>
+      <div class="lobby-section">
+        <button id="host-button" class="button">Host New Game</button>
+      </div>
+      <div class="lobby-section">
+        <input type="text" id="join-id-input" placeholder="Enter Host's Lobby ID" />
+        <button id="join-button" class="button">Join Game</button>
+      </div>
     </div>
 
     <div id="game-container" class="hidden">
-        <header class="header">
-            <div class="header__section header__section--left">
-                <h1 class="header__title"><span class="gradient-text">Gemini</span> Minesweeper</h1>
-            </div>
-            <div class="header__section header__section--center">
-                <div class="status">
-                    <i class="fas fa-flag"></i>
-                    <span id="mines-count" class="status__value">0</span>
-                </div>
-                <button id="reset-button" class="button reset-button" aria-label="Reset Game">
-                    <i class="fas fa-redo-alt"></i>
-                </button>
-                <div class="status">
-                    <i class="fas fa-clock"></i>
-                    <span id="timer" class="status__value">0</span>
-                </div>
-            </div>
-            <div class="header__section header__section--right">
-                <div class="difficulty-selector">
-                    <label for="difficulty" class="visually-hidden">Difficulty</label>
-                    <div class="custom-select-wrapper">
-                        <select id="difficulty">
-                            <option value="easy">Easy</option>
-                            <option value="medium" selected>Medium</option>
-                            <option value="hard">Hard</option>
-                        </select>
-                    </div>
-                </div>
-                <div class="zoom-control">
-                    <i class="fas fa-search-minus"></i>
-                    <label for="zoom-slider" class="visually-hidden">Zoom</label>
-                    <input type="range" id="zoom-slider" min="20" max="50" value="38">
-                    <i class="fas fa-search-plus"></i>
-                </div>
-                <button id="settings-button" class="button"><i class="fas fa-cog"></i> Settings</button>
-            </div>
-        </header>
-
-        <main class="game">
-            <div id="game-board" class="game-board" role="grid"></div>
-        </main>
-
-        <footer id="modal" class="modal" aria-hidden="true">
-            <div class="modal__content">
-                <h2 id="modal-message" class.name="modal__message"></h2>
-                <button id="modal-reset-button" class="button">Play Again</button>
-            </div>
-        </footer>
-
-        <!-- Settings Modal -->
-        <div id="settings-modal" class="modal" aria-hidden="true">
-            <div class="modal__content">
-                <h2>Settings</h2>
-                <div class="setting-item">
-                    <span>Developer Mode</span>
-                    <label class="switch">
-                        <input type="checkbox" id="developer-mode-toggle">
-                        <span class="slider round"></span>
-                    </label>
-                </div>
-                <button id="close-settings-modal" class="button">Close</button>
-            </div>
+      <header class="header">
+        <div class="header__section header__section--left">
+          <img src="assets/Google-gemini-icon.png" alt="Gemini Logo" class="gemini-logo" />
+          <h1 class="header__title"><span class="gradient-text">Gemini</span> Minesweeper</h1>
         </div>
+        <div class="header__section header__section--center">
+          <div class="status">
+            <i class="fas fa-flag"></i>
+            <span id="mines-count" class="status__value" aria-live="polite">0</span>
+          </div>
+          <button id="reset-button" class="button reset-button" aria-label="Reset Game">
+            <i class="fas fa-redo-alt"></i>
+          </button>
+          <div class="status">
+            <i class="fas fa-clock"></i>
+            <span id="timer" class="status__value" aria-live="polite">0</span>
+          </div>
+        </div>
+        <div class="header__section header__section--right">
+          <div class="difficulty-selector">
+            <label for="difficulty" class="visually-hidden">Difficulty</label>
+            <div class="custom-select-wrapper">
+              <select id="difficulty" aria-label="Select Difficulty Level">
+                <option value="easy">Easy</option>
+                <option value="medium" selected>Medium</option>
+                <option value="hard">Hard</option>
+                <option value="custom">Custom</option>
+              </select>
+            </div>
+          </div>
+          <div class="zoom-control">
+            <i class="fas fa-search-minus"></i>
+            <label for="zoom-slider" class="visually-hidden">Zoom</label>
+            <input
+              type="range"
+              id="zoom-slider"
+              min="20"
+              max="50"
+              value="38"
+              aria-valuemin="20"
+              aria-valuemax="50"
+              aria-valuenow="38"
+              aria-valuetext="Zoom level 38"
+            />
+            <i class="fas fa-search-plus"></i>
+          </div>
+          <button id="settings-button" class="button" aria-label="Settings">
+            <i class="fas fa-cog"></i> Settings
+          </button>
+        </div>
+      </header>
+
+      <main class="game">
+        <div id="game-board" class="game-board" role="grid"></div>
+      </main>
+
+      <div id="chat-container" class="chat-container">
+        <div id="chat-messages" class="chat-messages" aria-live="polite"></div>
+        <div class="chat-input-area">
+          <input type="text" id="chat-input" placeholder="Type a message..." />
+          <button id="send-chat-button" class="button">Send</button>
+        </div>
+      </div>
+
+      <footer id="modal" class="modal" aria-hidden="true">
+        <div class="modal__content">
+          <h2 id="modal-message" class.name="modal__message" aria-live="polite"></h2>
+          <button id="modal-reset-button" class="button">Play Again</button>
+        </div>
+      </footer>
+
+      <!-- Settings Modal -->
+      <div id="settings-modal" class="modal" aria-hidden="true">
+        <div class="modal__content">
+          <h2>Settings</h2>
+          <div class="setting-item">
+            <span>Developer Mode</span>
+            <label class="switch">
+              <input type="checkbox" id="developer-mode-toggle" role="switch" />
+              <span class="slider round"></span>
+            </label>
+          </div>
+          <div id="custom-difficulty-inputs" class="custom-difficulty-inputs hidden">
+            <h3>Custom Board Size</h3>
+            <p>Set your desired rows, columns, and mine count.</p>
+            <div class="setting-item custom-input-group">
+              <label for="custom-rows">Rows:</label>
+              <input type="number" id="custom-rows" min="5" max="50" value="10" />
+            </div>
+            <div class="setting-item custom-input-group">
+              <label for="custom-cols">Cols:</label>
+              <input type="number" id="custom-cols" min="5" max="50" value="10" />
+            </div>
+            <div class="setting-item custom-input-group">
+              <label for="custom-mines">Mines:</label>
+              <input type="number" id="custom-mines" min="1" value="15" />
+            </div>
+          </div>
+          <button id="close-settings-modal" class="button">Close</button>
+        </div>
+      </div>
     </div>
 
     <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
@@ -94,5 +136,5 @@
     <script src="network.js"></script>
     <script src="ui.js"></script>
     <script src="main.js"></script>
-</body>
+  </body>
 </html>
