@@ -9,7 +9,11 @@ let modal;
 let modalMessage;
 let modalResetButton;
 let resetButton;
-let difficulties;
+let difficulties = {
+  easy: { ROWS: 8, COLS: 8, MINES: 10 },
+  medium: { ROWS: 10, COLS: 10, MINES: 15 },
+  hard: { ROWS: 20, COLS: 20, MINES: 60 }, // Made hard mode bigger for co-op
+};
 let ROWS;
 let COLS;
 let MINES;

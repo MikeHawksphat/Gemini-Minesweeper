@@ -182,12 +182,6 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function startGame() {
-    difficulties = {
-      easy: { ROWS: 8, COLS: 8, MINES: 10 },
-      medium: { ROWS: 10, COLS: 10, MINES: 15 },
-      hard: { ROWS: 20, COLS: 20, MINES: 60 }, // Made hard mode bigger for co-op
-    };
-
     zoomSlider.addEventListener('input', () => handleZoom(zoomSlider, boardElement, COLS, ROWS));
     boardElement.addEventListener('click', (e) => handleCellClick(e, username));
     boardElement.addEventListener('contextmenu', (e) => handleCellRightClick(e));
