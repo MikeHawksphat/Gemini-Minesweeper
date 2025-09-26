@@ -57,19 +57,6 @@ window.renderBoard = function (boardElement, board, ROWS, COLS) {
       boardElement.appendChild(cell);
     }
   }
-
-  // After all cells are created, apply guessing scenario highlights if developerMode is on
-  if (developerMode) {
-    const guessingCells = findGuessingCells(board, ROWS, COLS);
-    guessingCells.forEach((gCell) => {
-      const cellElement = boardElement.querySelector(
-        `[data-row="${gCell.row}"][data-col="${gCell.col}"]`,
-      );
-      if (cellElement) {
-        cellElement.classList.add('developer-guess');
-      }
-    });
-  }
 };
 
 window.renderEndGame = function (win, loserName, modalMessage, boardElement, modal) {
