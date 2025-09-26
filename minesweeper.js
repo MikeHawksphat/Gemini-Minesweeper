@@ -22,6 +22,10 @@ let gameOver;
 let isFirstClick;
 let developerMode = false;
 
+function deepCopyBoard(board) {
+  return board.map((row) => row.map((cell) => ({ ...cell })));
+}
+
 function toggleDeveloperMode() {
   developerMode = !developerMode;
   console.log(`Developer Mode: ${developerMode ? 'ON' : 'OFF'}`);
@@ -39,7 +43,7 @@ function broadcast(data) {
   });
 }
 
-function init(broadcastUpdate) {
+function init() {
   if (!isHost) return;
   const { R, C, M } = setDifficulty(difficultySelect, difficulties);
   ROWS = R;
@@ -62,9 +66,7 @@ function init(broadcastUpdate) {
   minesCountElement.textContent = MINES - flagsPlaced;
   timerElement.textContent = timer;
   if (timeInterval) clearInterval(timeInterval);
-  if (broadcastUpdate) {
-    broadcast({ type: 'state', state: getState() });
-  }
+  broadcast({ type: 'state', state: getState() });
 }
 
 function getState() {
@@ -107,7 +109,6 @@ function processClick(row, col, playerName) {
       timerElement.textContent = timer;
       broadcast({ type: 'timer', time: timer });
     }, 1000);
-    broadcast({ type: 'state', state: getState() });
     renderBoard(boardElement, board, ROWS, COLS);
     checkWinCondition(); // Check win condition after first click reveal
     return;
@@ -224,7 +225,7 @@ function findGuessingCells(boardState, ROWS, COLS) {
   let changed = true;
 
   // Create a deep copy of the board for internal deduction simulation
-  const simulationBoard = JSON.parse(JSON.stringify(boardState));
+  const simulationBoard = deepCopyBoard(boardState);
 
   // Mark all currently revealed cells as 'revealed' in the simulation board
   // This is crucial for the solver to start with the known state

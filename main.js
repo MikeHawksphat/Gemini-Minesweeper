@@ -189,7 +189,7 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     zoomSlider.addEventListener('input', () => handleZoom(zoomSlider, boardElement, COLS, ROWS));
-    boardElement.addEventListener('click', (e) => handleCellClick(e));
+    boardElement.addEventListener('click', (e) => handleCellClick(e, username));
     boardElement.addEventListener('contextmenu', (e) => handleCellRightClick(e));
     boardElement.addEventListener('keydown', (e) =>
       handleKeyboardNavigation(
@@ -201,32 +201,33 @@ document.addEventListener('DOMContentLoaded', () => {
         processFlag,
         isHost,
         connections,
+        username,
       ),
     );
 
     if (isHost) {
       difficultySelect.addEventListener('change', () => {
         toggleCustomDifficultyInputs(difficultySelect);
-        init(true);
+        init();
       });
       resetButton.addEventListener('click', () => {
         resetButton.classList.add('spin-animation');
         setTimeout(() => {
           resetButton.classList.remove('spin-animation');
         }, 500); // Match animation duration
-        init(true);
+        init();
       });
       modalResetButton.addEventListener('click', () => {
-        init(true);
+        init();
         resetButton.focus(); // Return focus to the main reset button
       });
       boardElement.addEventListener('mouseover', (e) => handleChordPreview(e));
       boardElement.addEventListener('mouseout', () => clearChordPreview());
       // Add event listeners for custom difficulty inputs
-      customRowsInput.addEventListener('input', () => init(true));
-      customColsInput.addEventListener('input', () => init(true));
-      customMinesInput.addEventListener('input', () => init(true));
-      init(false);
+      customRowsInput.addEventListener('input', () => init());
+      customColsInput.addEventListener('input', () => init());
+      customMinesInput.addEventListener('input', () => init());
+      init();
     }
 
     toggleCustomDifficultyInputs(difficultySelect); // Call on initial load

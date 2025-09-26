@@ -1,13 +1,13 @@
-function handleZoom(zoomSlider, boardElement, COLS, ROWS) {
+window.handleZoom = function (zoomSlider, boardElement, COLS, ROWS) {
   const cellSize = zoomSlider.value;
   document.documentElement.style.setProperty('--cell-size', `${cellSize}px`);
   boardElement.style.gridTemplateColumns = `repeat(${COLS}, var(--cell-size))`;
   boardElement.style.gridTemplateRows = `repeat(${ROWS}, var(--cell-size))`;
   zoomSlider.setAttribute('aria-valuenow', cellSize);
   zoomSlider.setAttribute('aria-valuetext', `Zoom level ${cellSize}`);
-}
+};
 
-function renderBoard(boardElement, board, ROWS, COLS) {
+window.renderBoard = function (boardElement, board, ROWS, COLS) {
   boardElement.innerHTML = '';
   for (let row = 0; row < ROWS; row++) {
     for (let col = 0; col < COLS; col++) {
@@ -70,9 +70,9 @@ function renderBoard(boardElement, board, ROWS, COLS) {
       }
     });
   }
-}
+};
 
-function renderEndGame(win, loserName, modalMessage, boardElement, modal) {
+window.renderEndGame = function (win, loserName, modalMessage, boardElement, modal) {
   let modalDelay = 1500;
   if (win) {
     modalMessage.textContent = 'You Win!';
@@ -89,9 +89,9 @@ function renderEndGame(win, loserName, modalMessage, boardElement, modal) {
       playAgainButton.focus();
     }
   }, modalDelay);
-}
+};
 
-function updateCell(row, col, board, boardElement) {
+window.updateCell = function (row, col, board, boardElement) {
   const cellElement = boardElement.querySelector(`[data-row="${row}"][data-col="${col}"]`);
   if (!cellElement) return;
   const cellData = board[row][col];
@@ -118,14 +118,14 @@ function updateCell(row, col, board, boardElement) {
   } else {
     cellFront.innerHTML = '';
   }
-}
+};
 
-function getCell(row, col) {
+window.getCell = function (row, col) {
   if (row < 0 || row >= ROWS || col < 0 || col >= COLS) return null;
   return board[row][col];
-}
+};
 
-function handleChordPreview(e) {
+window.handleChordPreview = function (e) {
   const cellElement = e.target.closest('.cell');
   if (!cellElement) return;
   const row = parseInt(cellElement.dataset.row);
@@ -145,18 +145,14 @@ function handleChordPreview(e) {
       });
     }
   }
-}
+};
 
-function toggleCustomDifficultyInputs(difficultySelect) {
-  const customInputsDiv = document.getElementById('custom-difficulty-inputs');
-  if (difficultySelect.value === 'custom') {
-    customInputsDiv.classList.remove('hidden');
-  } else {
-    customInputsDiv.classList.add('hidden');
-  }
-}
+window.clearChordPreview = function () {
+  const previewCells = document.querySelectorAll('.preview');
+  previewCells.forEach((cell) => cell.classList.remove('preview'));
+};
 
-function handleCellRightClick(e) {
+window.handleCellRightClick = function (e) {
   e.preventDefault();
   const cellElement = e.target.closest('.cell');
   if (!cellElement) return;
@@ -167,46 +163,137 @@ function handleCellRightClick(e) {
   } else {
     Object.values(connections)[0].send({ type: 'flag', row, col });
   }
-}
+};
 
-window.handleZoom = handleZoom;
-window.renderBoard = renderBoard;
-window.renderEndGame = renderEndGame;
-window.updateCell = updateCell;
-window.getCell = getCell;
-window.handleChordPreview = handleChordPreview;
-window.clearChordPreview = clearChordPreview;
-window.handleCellRightClick = handleCellRightClick;
-window.handleKeyboardNavigation = handleKeyboardNavigation;
-window.setDifficulty = setDifficulty;
-window.toggleCustomDifficultyInputs = toggleCustomDifficultyInputs;
-window.loadState = loadState;
-window.handleCellClick = handleCellClick;
+window.handleKeyboardNavigation = function (
+  e,
+  boardElement,
+  ROWS,
+  COLS,
+  processClick,
+  processFlag,
+  isHost,
+  connections,
+  username,
+) {
+  const activeElement = document.activeElement;
+  let currentRow = -1;
+  let currentCol = -1;
 
+  if (activeElement && activeElement.classList.contains('cell')) {
+    currentRow = parseInt(activeElement.dataset.row);
+    currentCol = parseInt(activeElement.dataset.col);
+  }
 
-function handleCellClick(e) {
+  let nextRow = currentRow;
+  let nextCol = currentCol;
+
+  switch (e.key) {
+    case 'ArrowUp':
+      nextRow = Math.max(0, currentRow - 1);
+      break;
+    case 'ArrowDown':
+      nextRow = Math.min(ROWS - 1, currentRow + 1);
+      break;
+    case 'ArrowLeft':
+      nextCol = Math.max(0, currentCol - 1);
+      break;
+    case 'ArrowRight':
+      nextCol = Math.min(COLS - 1, currentCol + 1);
+      break;
+    case 'Enter':
+    case ' ': // Spacebar
+      if (currentRow !== -1 && currentCol !== -1) {
+        e.preventDefault(); // Prevent scrolling
+        if (isHost) {
+          processClick(currentRow, currentCol, username);
+        } else {
+          Object.values(connections)[0].send({ type: 'click', row: currentRow, col: currentCol });
+        }
+      }
+      return;
+    case 'f': // Flag/unflag with 'f' key
+    case 'F':
+      if (currentRow !== -1 && currentCol !== -1) {
+        e.preventDefault();
+        if (isHost) {
+          processFlag(currentRow, currentCol);
+        } else {
+          Object.values(connections)[0].send({ type: 'flag', row: currentRow, col: currentCol });
+        }
+      }
+      return;
+    default:
+      return;
+  }
+
+  if (nextRow !== currentRow || nextCol !== currentCol) {
+    e.preventDefault(); // Prevent scrolling
+    const nextCell = boardElement.querySelector(`[data-row="${nextRow}"][data-col="${nextCol}"]`);
+    if (nextCell) {
+      nextCell.focus();
+    }
+  }
+};
+
+window.setDifficulty = function (difficultySelect, difficulties) {
+  const level = difficultySelect.value;
+  if (level === 'custom') {
+    const customRows = parseInt(document.getElementById('custom-rows').value);
+    const customCols = parseInt(document.getElementById('custom-cols').value);
+    const customMines = parseInt(document.getElementById('custom-mines').value);
+
+    // Basic validation
+    if (isNaN(customRows) || customRows < 5 || customRows > 50) return { R: 10, C: 10, M: 15 };
+    if (isNaN(customCols) || customCols < 5 || customCols > 50) return { R: 10, C: 10, M: 15 };
+    if (isNaN(customMines) || customMines < 1 || customMines >= customRows * customCols)
+      return { R: 10, C: 10, M: 15 };
+
+    return { R: customRows, C: customCols, M: customMines };
+  } else {
+    const config = difficulties[level];
+    return { R: config.ROWS, C: config.COLS, M: config.MINES };
+  }
+};
+
+window.toggleCustomDifficultyInputs = function (difficultySelect) {
+  const customInputsDiv = document.getElementById('custom-difficulty-inputs');
+  if (difficultySelect.value === 'custom') {
+    customInputsDiv.classList.remove('hidden');
+  } else {
+    customInputsDiv.classList.add('hidden');
+  }
+};
+
+window.loadState = function (state) {
+  ROWS = state.rows;
+  COLS = state.cols;
+  MINES = state.mines;
+  board = state.board;
+  flagsPlaced = state.flagsPlaced;
+  gameOver = state.gameOver;
+  timer = state.timer;
+  isFirstClick = state.isFirstClick;
+
+  // Make UI visible for guest
+  document.querySelector('.header__section--center').style.visibility = 'visible';
+  document.querySelector('.header__section--right .difficulty-selector').style.visibility =
+    'visible';
+
+  minesCountElement.textContent = MINES - flagsPlaced;
+  timerElement.textContent = timer;
+  handleZoom(zoomSlider, boardElement, COLS, ROWS);
+  renderBoard(boardElement, board, ROWS, COLS);
+};
+
+window.handleCellClick = function (e, username) {
   const cellElement = e.target.closest('.cell');
   if (!cellElement) return;
   const row = parseInt(cellElement.dataset.row);
   const col = parseInt(cellElement.dataset.col);
   if (isHost) {
-    processClick(row, col, 'Host'); // Host clicks are processed with a default name
+    processClick(row, col, username); // Host clicks are processed with a default name
   } else {
     Object.values(connections)[0].send({ type: 'click', row, col });
   }
-}
-
-window.handleZoom = handleZoom;
-window.renderBoard = renderBoard;
-window.renderEndGame = renderEndGame;
-window.updateCell = updateCell;
-window.getCell = getCell;
-window.handleChordPreview = handleChordPreview;
-window.clearChordPreview = clearChordPreview;
-window.handleCellRightClick = handleCellRightClick;
-window.handleKeyboardNavigation = handleKeyboardNavigation;
-window.setDifficulty = setDifficulty;
-window.toggleCustomDifficultyInputs = toggleCustomDifficultyInputs;
-window.loadState = loadState;
-window.handleCellClick = handleCellClick;
-
+};

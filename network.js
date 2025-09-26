@@ -23,7 +23,7 @@ function setupConnectionListeners(conn) {
     } else {
       // This client is a guest
       if (data.type === 'state') {
-        loadState(data.state);
+        window.loadState(data.state);
       } else if (data.type === 'reveal') {
         data.cells.forEach(({ row, col, cell }) => {
           board[row][col] = cell;
