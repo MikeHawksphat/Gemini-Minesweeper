@@ -196,15 +196,17 @@ function handleCellClick(e) {
   }
 }
 
-function handleCellRightClick(e) {
-  e.preventDefault();
-  const cellElement = e.target.closest('.cell');
-  if (!cellElement) return;
-  const row = parseInt(cellElement.dataset.row);
-  const col = parseInt(cellElement.dataset.col);
-  if (isHost) {
-    processFlag(row, col);
-  } else {
-    Object.values(connections)[0].send({ type: 'flag', row, col });
-  }
-}
+window.handleZoom = handleZoom;
+window.renderBoard = renderBoard;
+window.renderEndGame = renderEndGame;
+window.updateCell = updateCell;
+window.getCell = getCell;
+window.handleChordPreview = handleChordPreview;
+window.clearChordPreview = clearChordPreview;
+window.handleCellRightClick = handleCellRightClick;
+window.handleKeyboardNavigation = handleKeyboardNavigation;
+window.setDifficulty = setDifficulty;
+window.toggleCustomDifficultyInputs = toggleCustomDifficultyInputs;
+window.loadState = loadState;
+window.handleCellClick = handleCellClick;
+
